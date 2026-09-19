@@ -320,24 +320,24 @@ def handle_tools_menu(current_dir: Path) -> None:
 
 def handle_organize_files(current_dir: Path) -> None:
     """Interactive organizer."""
-    plan = plan_organize(current_dir)
-    if not plan.actions:
+    plans = plan_organize(current_dir)
+    if not plans:
         console.print(
             "[bold green]✓ Current directory is already clean and organized![/bold green]"
         )
         return
 
     table = create_table(
-        title=f"Organization Plan for {current_dir.resolve().name} ({len(plan.actions)} files)",
+        title=f"Organization Plan for {current_dir.resolve().name} ({len(plans)} files)",
         columns=["File", "Target Folder", "Category"],
     )
-    for act in plan.actions:
+    for act in plans:
         table.add_row(act.source.name, act.category, act.category)
     console.print(table)
 
     if Confirm.ask("\n[bold cyan]Execute organization plan now?[/bold cyan]", default=True):
-        execute_organize(plan)
-        console.print("[bold green]✓ Directory organized successfully![/bold green]")
+        moved = execute_organize(plans, dry_run=False)
+        console.print(f"[bold green]✓ Organized {moved} files successfully![/bold green]")
 
 
 def handle_workspace_menu(current_dir: Path) -> None:
