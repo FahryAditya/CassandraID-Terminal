@@ -1,8 +1,23 @@
+from __future__ import annotations
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
+
+# Consistent Deep Space Color Palette definition
+PALETTE = {
+    "bg_dark": "#0A2353",
+    "bg_surface": "#112C70",
+    "indigo": "#5B58EB",
+    "magenta": "#BB63FF",
+    "cyan": "#56E1E9",
+    "green": "#2ECC71",
+    "yellow": "#F1C40F",
+    "red": "#E74C3C",
+    "blue": "#3498DB",
+}
 
 # Semantic theme matching Deep Space palette mapped for terminals
 DEEP_SPACE_THEME = Theme(
@@ -30,22 +45,28 @@ console = Console(theme=DEEP_SPACE_THEME, safe_box=True)
 error_console = Console(theme=DEEP_SPACE_THEME, stderr=True, safe_box=True)
 
 
-def print_banner(
-    title: str = "CassandraID-Terminal", subtitle: str = "Developer Workspace Toolkit"
-) -> None:
-    """Print the stylized application banner."""
+def get_theme_header(
+    title: str = "CassandraID-Terminal", subtitle: str = "Developer Intelligence Center"
+) -> Panel:
+    """Generate a stylized application header panel."""
     text = Text()
-    text.append(" 🗂️  ", style="bold magenta")
+    text.append(" ⚡ ", style="bold cyan")
     text.append(title, style="bold cyan")
-    text.append(f"  •  {subtitle}\n", style="dim cyan")
-    text.append("    Local-First • Terminal Intelligence • Project Scaffolding", style="dim")
+    text.append(f"  •  {subtitle}\n", style="dim magenta")
+    text.append("    Local-First Developer Workspace Intelligence", style="dim")
 
-    panel = Panel(
+    return Panel(
         text,
         border_style="cyan",
         padding=(0, 1),
     )
-    console.print(panel)
+
+
+def print_banner(
+    title: str = "CassandraID-Terminal", subtitle: str = "Developer Workspace Toolkit"
+) -> None:
+    """Print the stylized application banner."""
+    console.print(get_theme_header(title, subtitle))
 
 
 def create_table(title: str | None = None, columns: list[str] | None = None) -> Table:

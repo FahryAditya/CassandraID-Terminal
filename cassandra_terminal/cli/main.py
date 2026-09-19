@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
@@ -15,8 +17,13 @@ if sys.platform == "win32":
 
 from cassandra_terminal import __app_name__, __version__
 from cassandra_terminal.cli.files_cmd import files_app
+from cassandra_terminal.cli.find_cmd import app as find_app
 from cassandra_terminal.cli.misc_cmd import history_cmd, settings_app
+from cassandra_terminal.cli.monitor_cmd import app as monitor_app
+from cassandra_terminal.cli.notes_cmd import app as notes_app
+from cassandra_terminal.cli.ports_cmd import app as ports_app
 from cassandra_terminal.cli.project_cmd import create_cmd, templates_app
+from cassandra_terminal.cli.runner_cmd import app as runner_app
 from cassandra_terminal.cli.tools_cmd import tools_app
 from cassandra_terminal.cli.workspace_cmd import projects_app, workspace_app
 from cassandra_terminal.modules.dashboard import render_dashboard, run_interactive_dashboard
@@ -30,6 +37,12 @@ app = typer.Typer(
 )
 
 # Register Sub-apps
+app.add_typer(ports_app, name="ports")
+app.add_typer(runner_app, name="run")
+app.add_typer(find_app, name="find")
+app.add_typer(notes_app, name="notes")
+app.add_typer(monitor_app, name="monitor")
+
 app.add_typer(files_app, name="files")
 app.add_typer(tools_app, name="tools")
 app.add_typer(templates_app, name="templates")
@@ -42,7 +55,7 @@ app.command(name="create")(create_cmd)
 app.command(name="history")(history_cmd)
 
 
-def version_callback(value: bool):
+def version_callback(value: bool) -> None:
     if value:
         console.print(
             f"[bold cyan]{__app_name__}[/bold cyan] version [magenta]{__version__}[/magenta]"
@@ -58,7 +71,7 @@ def dashboard_command(
     interactive: bool = typer.Option(
         True, "--interactive/--no-interactive", "-i/-n", help="Run interactive action menu"
     ),
-):
+) -> None:
     """Launch the terminal Command Center dashboard with action selection."""
     if interactive:
         run_interactive_dashboard(path)
@@ -77,8 +90,8 @@ def main(
         callback=version_callback,
         is_eager=True,
     ),
-):
-    """FileForge DevKit CLI Entrypoint."""
+) -> None:
+    """CassandraID-Terminal CLI Entrypoint."""
     if ctx.invoked_subcommand is None:
         # Default behavior when running just `cassandra_terminal`
         run_interactive_dashboard(Path("."))

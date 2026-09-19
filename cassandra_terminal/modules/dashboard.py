@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from rich.columns import Columns
@@ -15,11 +17,20 @@ from cassandra_terminal.modules.files import (
     plan_organize,
     search_files,
 )
+from cassandra_terminal.modules.finder import find_files_fuzzy, open_file_in_editor
 from cassandra_terminal.modules.generator import (
     generate_project,
     get_available_templates,
 )
 from cassandra_terminal.modules.git_intel import check_project_health, get_git_status
+from cassandra_terminal.modules.notes import (
+    add_note,
+    delete_note,
+    list_notes,
+    toggle_note_status,
+)
+from cassandra_terminal.modules.ports import get_active_listening_ports, kill_port_process
+from cassandra_terminal.modules.runner import detect_project_scripts, execute_script
 from cassandra_terminal.modules.settings import get_all_settings, set_setting
 from cassandra_terminal.modules.tools import (
     analyze_disk_usage,
@@ -33,7 +44,7 @@ from cassandra_terminal.modules.workspace import (
     get_recent_projects,
     list_workspaces,
 )
-from cassandra_terminal.ui.theme import console, create_table
+from cassandra_terminal.ui.theme import PALETTE, console, create_table
 
 
 def render_dashboard(current_dir: Path) -> None:
@@ -47,7 +58,9 @@ def render_dashboard(current_dir: Path) -> None:
     header_text = Text()
     header_text.append("⚡ CassandraID-Terminal", style="bold cyan")
     header_text.append("  •  Command Center\n", style="bold magenta")
-    header_text.append("Local-First Developer Workspace Toolkit\n\n", style="dim")
+    header_text.append(
+        "Local-First Developer Workspace Toolkit & Intelligence Center\n\n", style="dim"
+    )
     header_text.append("📁 Directory: ", style="bold white")
     header_text.append(f"{curr_path} ", style="underline cyan")
     header_text.append(f"[{curr_type}]\n", style="bold green")
@@ -71,8 +84,8 @@ def render_dashboard(current_dir: Path) -> None:
 
     header_panel = Panel(header_text, border_style="cyan", padding=(1, 2))
 
-    # 2. Left Panel: Recent Projects & Workspaces
-    recent_projects = get_recent_projects(limit=5)
+    # 2. Left Panel: Recent Projects & Registered Workspaces
+    recent_projects = get_recent_projects(limit=4)
     recent_table = Table(
         title="Recent Projects",
         title_style="bold magenta",
@@ -89,28 +102,28 @@ def render_dashboard(current_dir: Path) -> None:
     else:
         recent_table.add_row("No recent projects", "-", "-")
 
-    workspaces = list_workspaces()
-    ws_table = Table(
-        title="Registered Workspaces",
+    # Project Notes widget
+    notes = list_notes(str(curr_path), filter_status="pending")[:4]
+    notes_table = Table(
+        title=f"Workspace Tasks ({len(notes)} pending)",
         title_style="bold magenta",
         border_style="dim cyan",
         show_header=True,
     )
-    ws_table.add_column("Name", style="cyan")
-    ws_table.add_column("Type", style="green")
-    ws_table.add_column("Path", style="dim")
+    notes_table.add_column("ID", style="dim", width=4)
+    notes_table.add_column("Task", style="bold yellow")
 
-    if workspaces:
-        for w in workspaces:
-            ws_table.add_row(w.name, w.project_type, w.path)
+    if notes:
+        for n in notes:
+            notes_table.add_row(str(n.id), n.content[:35])
     else:
-        ws_table.add_row("No registered workspaces", "-", "-")
+        notes_table.add_row("-", "[dim]No pending tasks. Add one with 'cassandra notes'[/dim]")
 
-    left_group = Group(recent_table, ws_table)
-    left_panel = Panel(left_group, title="Workspaces & Projects", border_style="magenta")
+    left_group = Group(recent_table, notes_table)
+    left_panel = Panel(left_group, title="Projects & Tasks", border_style="magenta")
 
     # 3. Right Panel: Activity Log & Quick Commands
-    activity_logs = get_activity_logs(limit=6)
+    activity_logs = get_activity_logs(limit=5)
     act_table = Table(
         title="Recent Activity",
         title_style="bold magenta",
@@ -140,18 +153,20 @@ def render_dashboard(current_dir: Path) -> None:
         act_table.add_row("-", "NONE", "No activity recorded yet", "-")
 
     cmd_help = Text()
-    cmd_help.append("⚡ Quick Commands:\n", style="bold cyan")
-    cmd_help.append(" • cassandra_terminal files browse .        ", style="green")
-    cmd_help.append("Interactive TUI Browser\n", style="dim")
-    cmd_help.append(" • cassandra_terminal tools duplicates .    ", style="green")
-    cmd_help.append("Scan duplicate files\n", style="dim")
-    cmd_help.append(" • cassandra_terminal tools disk . --clean  ", style="green")
-    cmd_help.append("Clean build/cache junk\n", style="dim")
-    cmd_help.append(" • cassandra_terminal tools health .        ", style="green")
-    cmd_help.append("Check project health\n", style="dim")
+    cmd_help.append("⚡ Power Commands:\n", style="bold cyan")
+    cmd_help.append(" • cassandra ports          ", style="bold green")
+    cmd_help.append("Inspect & kill listening ports\n", style="dim")
+    cmd_help.append(" • cassandra run            ", style="bold green")
+    cmd_help.append("Run project scripts (npm/make/py)\n", style="dim")
+    cmd_help.append(" • cassandra find <query>   ", style="bold green")
+    cmd_help.append("Fuzzy file finder + open\n", style="dim")
+    cmd_help.append(" • cassandra notes          ", style="bold green")
+    cmd_help.append("Workspace task scratchpad\n", style="dim")
+    cmd_help.append(" • cassandra monitor        ", style="bold green")
+    cmd_help.append("Live CPU / RAM / Disk monitor\n", style="dim")
 
     right_group = Group(act_table, Panel(cmd_help, border_style="dim cyan"))
-    right_panel = Panel(right_group, title="Activity & Quick Actions", border_style="cyan")
+    right_panel = Panel(right_group, title="Activity & Power Actions", border_style="cyan")
 
     # Display columns
     console.print(header_panel)
@@ -180,220 +195,200 @@ def handle_explore_files(current_dir: Path) -> None:
             table.add_row(type_badge, it.name, it.formatted_size, it.formatted_time)
         console.print(table)
     elif choice == "2":
-        root_path = current_dir.resolve()
-        tree = Tree(f"[bold cyan]📁 {root_path.name}[/bold cyan] [dim]({root_path})[/dim]")
-        for entry in sorted(root_path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
-            if entry.name.startswith("."):
-                continue
-            if entry.is_dir():
-                sub_t = tree.add(f"[bold magenta]📁 {entry.name}[/bold magenta]")
-                try:
-                    for sub_entry in sorted(
-                        entry.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())
-                    )[:10]:
-                        if not sub_entry.name.startswith("."):
-                            sub_t.add(
-                                f"[cyan]{sub_entry.name}[/cyan]"
-                                if sub_entry.is_dir()
-                                else f"📄 {sub_entry.name}"
-                            )
-                except Exception:
-                    pass
+        tree = Tree(f"[bold cyan]📁 {current_dir.resolve().name}[/bold cyan]")
+        for it in list_directory(current_dir):
+            if it.is_dir:
+                tree.add(f"[bold magenta]📁 {it.name}/[/bold magenta]")
             else:
-                tree.add(f"[white]📄 {entry.name}[/white]")
+                tree.add(f"[green]📄 {it.name}[/green] [dim]({it.formatted_size})[/dim]")
         console.print(tree)
     elif choice == "3":
-        q = Prompt.ask("[bold cyan]Enter search query[/bold cyan]", default="")
-        ext = Prompt.ask(
-            "[bold cyan]Filter by extension (optional, e.g. py, js)[/bold cyan]", default=""
+        pattern = Prompt.ask(
+            "[bold cyan]Enter file name or pattern (*.py, .json, test*)[/bold cyan]"
         )
-        results = search_files(current_dir, query=q, extension=ext or None)
+        matches = search_files(current_dir, pattern)
         table = create_table(
-            title=f"Search Results for '{q}'", columns=["Type", "Name", "Size", "Path"]
+            title=f"Search matches for '{pattern}'",
+            columns=["Type", "Name", "Relative Path", "Size"],
         )
-        for it in results:
+        for it in matches:
             type_badge = "[bold magenta]<DIR>[/bold magenta]" if it.is_dir else "[cyan]FILE[/cyan]"
-            table.add_row(type_badge, it.name, it.formatted_size, str(it.path))
+            table.add_row(type_badge, it.name, it.relative_path, it.formatted_size)
         console.print(table)
     elif choice == "4":
         run_tui_file_browser(current_dir)
 
 
 def handle_create_project(current_dir: Path) -> None:
-    """Interactive sub-menu for DevForge Project Generator."""
+    """Interactive sub-menu for Project Templates generator."""
     templates = get_available_templates()
-    console.print("\n[bold magenta]⚒️  DevForge Project Generator[/bold magenta]")
-    for idx, tpl in enumerate(templates, 1):
+    console.print("\n[bold cyan]⚒️ Available Project Templates:[/bold cyan]")
+    for idx, t in enumerate(templates, 1):
         console.print(
-            f"  [bold green]{idx}.[/bold green] [bold cyan]{tpl.key}[/bold cyan] — {tpl.name} [dim]({tpl.description})[/dim]"
+            f"  [bold green]{idx}.[/bold green] [bold white]{t.name}[/bold white] "
+            f"([dim]{t.language}[/dim]) - {t.description}"
         )
-    console.print("  [bold dim]0. Cancel[/bold dim]")
 
-    choices = [str(i) for i in range(len(templates) + 1)]
     choice = Prompt.ask(
-        "[bold magenta]Select template[/bold magenta]", choices=choices, default="1"
+        "\n[bold magenta]Select template number (or 0 to cancel)[/bold magenta]", default="1"
     )
-    if choice == "0":
+    if not choice.isdigit() or int(choice) < 1 or int(choice) > len(templates):
         return
 
     selected_tpl = templates[int(choice) - 1]
-    name = Prompt.ask("[bold cyan]Enter project name[/bold cyan]")
-    if not name.strip():
-        console.print("[red]Project name cannot be empty.[/red]")
-        return
+    name = Prompt.ask("[bold cyan]Project name[/bold cyan]", default=f"my-{selected_tpl.id}-app")
+    target_dir = current_dir / name
 
+    init_git = Confirm.ask("[bold cyan]Initialize Git repository?[/bold cyan]", default=True)
     author = Prompt.ask("[bold cyan]Author name[/bold cyan]", default="Developer")
     desc = Prompt.ask(
-        "[bold cyan]Project description[/bold cyan]", default=f"A new {selected_tpl.name} project"
+        "[bold cyan]Project description[/bold cyan]", default="Created with CassandraID-Terminal"
     )
-    git_init = Confirm.ask("[bold cyan]Initialize Git repository?[/bold cyan]", default=False)
-    create_venv = False
-    if selected_tpl.key.startswith("python"):
-        create_venv = Confirm.ask(
-            "[bold cyan]Create Python virtual environment (.venv)?[/bold cyan]", default=False
-        )
 
-    with console.status(
-        f"[bold cyan]Generating {selected_tpl.name} project '{name}'...[/bold cyan]"
-    ):
-        try:
-            proj_path = generate_project(
-                template_key=selected_tpl.key,
-                project_name=name,
-                target_dir=current_dir,
-                author_name=author,
-                description=desc,
-                git_init=git_init,
-                create_venv=create_venv,
-            )
-            console.print(
-                f"\n[bold green]✓ Project '{name}' created successfully at:[/bold green] [cyan]{proj_path}[/cyan]"
-            )
-        except Exception as e:
-            console.print(f"[bold red]Failed to create project:[/bold red] {e}")
+    console.print(f"\n[cyan]Generating project at {target_dir}...[/cyan]")
+    generate_project(
+        template_id=selected_tpl.id,
+        target_path=target_dir,
+        project_name=name,
+        init_git=init_git,
+        author=author,
+        description=desc,
+    )
+    console.print(f"[bold green]✓ Project '{name}' created successfully![/bold green]")
 
 
 def handle_tools_menu(current_dir: Path) -> None:
-    """Interactive sub-menu for Advanced Tools."""
-    console.print("\n[bold magenta]🛠️ Advanced File & Repo Tools[/bold magenta]")
-    console.print("  [bold green]1.[/bold green] 🔍 Scan Duplicate Files (SHA-256)")
-    console.print("  [bold green]2.[/bold green] 📊 Analyze Disk Usage & Clean Junk Folders")
-    console.print("  [bold green]3.[/bold green] 🩺 Project Health Evaluation")
+    """Interactive sub-menu for advanced dev tools."""
+    console.print("\n[bold cyan]🛠️ Advanced Dev Tools[/bold cyan]")
+    console.print("  [bold green]1.[/bold green] Duplicate File Finder (SHA-256 Hash)")
+    console.print("  [bold green]2.[/bold green] Disk Usage Analyzer & Junk Cleaner")
+    console.print("  [bold green]3.[/bold green] Project Health & Repo Integrity Score")
     console.print("  [bold dim]0.[/bold dim] Back to main menu")
 
     choice = Prompt.ask(
-        "[bold cyan]Select tool[/bold cyan]", choices=["1", "2", "3", "0"], default="1"
+        "[bold magenta]Select tool[/bold magenta]", choices=["1", "2", "3", "0"], default="1"
     )
     if choice == "1":
         with console.status("[bold cyan]Scanning for duplicate files...[/bold cyan]"):
             groups = find_duplicate_files(current_dir)
         if not groups:
-            console.print("[bold green]✓ No duplicate files found![/bold green]")
+            console.print(
+                "[bold green]✓ No duplicate files found in current workspace![/bold green]"
+            )
         else:
             table = create_table(
-                title=f"Duplicate Files ({len(groups)} groups)", columns=["Hash", "Size", "Files"]
+                title=f"Found {len(groups)} Duplicate Groups",
+                columns=["Hash (SHA256)", "Size", "Duplicate Paths"],
             )
             for g in groups:
-                table.add_row(
-                    g.file_hash[:16] + "...",
-                    f"{g.file_size / 1024:.1f} KB",
-                    "\n".join(f.name for f in g.files),
-                )
+                paths_str = "\n".join(str(p.relative_to(current_dir)) for p in g.paths)
+                table.add_row(g.file_hash[:12] + "...", g.formatted_size, paths_str)
             console.print(table)
     elif choice == "2":
-        items = analyze_disk_usage(current_dir)
+        with console.status("[bold cyan]Analyzing disk usage...[/bold cyan]"):
+            usage = analyze_disk_usage(current_dir)
         table = create_table(
-            title=f"Disk Usage: {current_dir.resolve().name}", columns=["Folder", "Size", "Junk?"]
+            title=f"Disk Usage for {current_dir.resolve().name} (Total: {usage.formatted_total_size})",
+            columns=["Category", "Size", "Folder Count"],
         )
-        for it in items:
-            junk_badge = (
-                "[bold yellow]JUNK/CACHE[/bold yellow]" if it.is_junk_candidate else "[dim]No[/dim]"
-            )
-            table.add_row(it.name, it.formatted_size, junk_badge)
+        for cat in usage.categories:
+            table.add_row(cat.name, cat.formatted_size, str(cat.item_count))
         console.print(table)
-        if Confirm.ask("\n[bold red]Clean build/cache junk folders now?[/bold red]", default=False):
-            cnt, freed = clean_junk_directories(current_dir, dry_run=False)
-            console.print(
-                f"[bold green]✓ Cleaned {cnt} folders! Freed {freed / (1024 * 1024):.2f} MB.[/bold green]"
-            )
+
+        if usage.junk_size > 0:
+            if Confirm.ask(
+                f"\n[bold yellow]Found {usage.formatted_junk_size} in junk/cache folders. Clean them up?[/bold yellow]",
+                default=False,
+            ):
+                cleaned_bytes, cleaned_dirs = clean_junk_directories(current_dir)
+                console.print(
+                    f"[bold green]✓ Cleaned {cleaned_dirs} directories and freed {cleaned_bytes / (1024 * 1024):.2f} MB![/bold green]"
+                )
     elif choice == "3":
         health = check_project_health(current_dir)
         console.print(
             f"\n[bold cyan]Project Health Score:[/bold cyan] [bold green]{health.score}/100[/bold green]"
         )
-        table = create_table(
-            title="Health Checklist", columns=["Status", "Check Item", "Description"]
-        )
-        for c in health.checks:
-            table.add_row(
-                "[bold green]PASS[/bold green]" if c.passed else "[bold red]MISSING[/bold red]",
-                c.name,
-                c.description,
-            )
-        console.print(table)
+        for check, passed in health.checks.items():
+            badge = "[bold green]PASS[/bold green]" if passed else "[bold red]FAIL[/bold red]"
+            console.print(f"  • {check}: {badge}")
+        if health.recommendations:
+            console.print("\n[bold yellow]Recommendations:[/bold yellow]")
+            for rec in health.recommendations:
+                console.print(f"  ⚡ {rec}")
 
 
 def handle_organize_files(current_dir: Path) -> None:
     """Interactive organizer."""
-    plans = plan_organize(current_dir)
-    if not plans:
-        console.print("[dim]No files to organize in this directory.[/dim]")
+    plan = plan_organize(current_dir)
+    if not plan.actions:
+        console.print(
+            "[bold green]✓ Current directory is already clean and organized![/bold green]"
+        )
         return
 
     table = create_table(
-        title="📦 Organization Plan (Preview)", columns=["File", "Category", "Destination"]
+        title=f"Organization Plan for {current_dir.resolve().name} ({len(plan.actions)} files)",
+        columns=["File", "Target Folder", "Category"],
     )
-    for p in plans:
-        table.add_row(p.source.name, f"[cyan]{p.category}[/cyan]", str(p.destination.name))
+    for act in plan.actions:
+        table.add_row(act.source.name, act.category, act.category)
     console.print(table)
 
-    if Confirm.ask(
-        "[bold magenta]Proceed with organizing these files?[/bold magenta]", default=False
-    ):
-        moved = execute_organize(plans, dry_run=False)
-        console.print(f"[bold green]✓ Organized {moved} files successfully![/bold green]")
+    if Confirm.ask("\n[bold cyan]Execute organization plan now?[/bold cyan]", default=True):
+        execute_organize(plan)
+        console.print("[bold green]✓ Directory organized successfully![/bold green]")
 
 
 def handle_workspace_menu(current_dir: Path) -> None:
-    """Interactive workspace menu."""
-    workspaces = list_workspaces()
-    table = create_table(title="🌐 Registered Workspaces", columns=["Name", "Type", "Path"])
-    for w in workspaces:
-        table.add_row(
-            f"[bold cyan]{w.name}[/bold cyan]", f"[bold green]{w.project_type}[/bold green]", w.path
-        )
-    console.print(table)
+    """Interactive workspace management."""
+    console.print("\n[bold cyan]🌐 Workspaces Menu[/bold cyan]")
+    console.print("  [bold green]1.[/bold green] List registered workspaces")
+    console.print("  [bold green]2.[/bold green] Register current directory as workspace")
+    console.print("  [bold dim]0.[/bold dim] Back")
 
-    if Confirm.ask(
-        f"[bold cyan]Register current folder '{current_dir.resolve().name}' as workspace?[/bold cyan]",
-        default=True,
-    ):
-        ws_name = Prompt.ask(
+    choice = Prompt.ask(
+        "[bold magenta]Select option[/bold magenta]", choices=["1", "2", "0"], default="1"
+    )
+    if choice == "1":
+        ws = list_workspaces()
+        table = create_table(
+            title="Registered Workspaces", columns=["Name", "Type", "Path", "Created"]
+        )
+        for w in ws:
+            table.add_row(w.name, w.project_type, w.path, w.created_at)
+        console.print(table)
+    elif choice == "2":
+        name = Prompt.ask(
             "[bold cyan]Workspace name[/bold cyan]", default=current_dir.resolve().name
         )
-        add_workspace(current_dir, name=ws_name)
-        console.print(f"[bold green]✓ Registered workspace '{ws_name}'[/bold green]")
+        w = add_workspace(name, current_dir)
+        console.print(
+            f"[bold green]✓ Registered workspace '{w.name}' [{w.project_type}][/bold green]"
+        )
 
 
 def handle_activity_history() -> None:
-    """Interactive activity history viewer."""
-    logs = get_activity_logs(limit=20)
+    """Interactive activity history view."""
+    logs = get_activity_logs(limit=25)
     table = create_table(
-        title="📜 Activity Logs", columns=["Time", "Operation", "Target", "Status"]
+        title="📜 Activity History Log",
+        columns=["Timestamp", "Operation", "Target", "Status", "Details"],
     )
-    for log_entry in logs:
-        status_style = "bold green" if log_entry.result == "SUCCESS" else "bold red"
+    for log_item in logs:
+        status_style = "bold green" if log_item.result == "SUCCESS" else "bold red"
         table.add_row(
-            log_entry.timestamp,
-            f"[bold cyan]{log_entry.operation}[/bold cyan]",
-            log_entry.target,
-            f"[{status_style}]{log_entry.result}[/{status_style}]",
+            log_item.timestamp,
+            log_item.operation,
+            log_item.target,
+            f"[{status_style}]{log_item.result}[/{status_style}]",
+            log_item.details or "-",
         )
     console.print(table)
 
-    if Confirm.ask("[bold red]Do you want to clear activity logs?[/bold red]", default=False):
-        cnt = clear_activity_logs()
-        console.print(f"[bold green]✓ Cleared {cnt} log entries.[/bold green]")
+    if Confirm.ask("\n[bold yellow]Clear all activity history?[/bold yellow]", default=False):
+        clear_activity_logs()
+        console.print("[bold green]✓ Activity history cleared.[/bold green]")
 
 
 def handle_settings_menu() -> None:
@@ -414,6 +409,143 @@ def handle_settings_menu() -> None:
             console.print(f"[bold red]Failed to update setting:[/bold red] {e}")
 
 
+def handle_ports_menu() -> None:
+    """Interactive ports inspector & killer."""
+    ports = get_active_listening_ports()
+    if not ports:
+        console.print("[bold green]✓ No active listening ports detected on localhost.[/bold green]")
+        return
+
+    table = Table(
+        title=f"Active Listening Ports ({len(ports)})",
+        border_style=PALETTE["blue"],
+        header_style=f"bold {PALETTE['cyan']}",
+    )
+    table.add_column("Port", style="bold yellow", width=8)
+    table.add_column("PID", style="dim", width=8)
+    table.add_column("Process Name", style=f"bold {PALETTE['green']}")
+    table.add_column("Memory (MB)", style=f"{PALETTE['magenta']}", justify="right")
+    table.add_column("Path", style="dim")
+
+    for p in ports:
+        table.add_row(str(p.port), str(p.pid), p.process_name, f"{p.memory_mb:.1f} MB", p.exe_path)
+
+    console.print(table)
+
+    kill_target = Prompt.ask(
+        f"\n[{PALETTE['cyan']}]Enter port number to kill ([dim]or press Enter to skip[/dim])[/{PALETTE['cyan']}]",
+        default="",
+    ).strip()
+
+    if kill_target.isdigit():
+        target_port = int(kill_target)
+        if Confirm.ask(
+            f"[bold red]Terminate process holding port {target_port}?[/bold red]", default=True
+        ):
+            killed, msg = kill_port_process(target_port)
+            if killed:
+                console.print(f"[{PALETTE['green']}]✔ {msg}[/{PALETTE['green']}]")
+            else:
+                console.print(f"[{PALETTE['magenta']}]⚠ {msg}[/{PALETTE['magenta']}]")
+
+
+def handle_runner_menu(current_dir: Path) -> None:
+    """Interactive script runner."""
+    scripts = detect_project_scripts(current_dir)
+    if not scripts:
+        console.print(
+            "[yellow]No scripts detected in package.json, pyproject.toml, Makefile, etc.[/yellow]"
+        )
+        return
+
+    table = Table(
+        title=f"Available Scripts ({len(scripts)})",
+        border_style=PALETTE["blue"],
+        header_style=f"bold {PALETTE['cyan']}",
+    )
+    table.add_column("#", style="dim", width=4)
+    table.add_column("Name", style=f"bold {PALETTE['green']}")
+    table.add_column("Source", style=f"bold {PALETTE['magenta']}")
+    table.add_column("Command", style="dim")
+
+    for idx, s in enumerate(scripts, 1):
+        table.add_row(str(idx), s.name, s.source, s.command)
+    console.print(table)
+
+    choice = Prompt.ask("Select script to execute (or Enter to cancel)", default="")
+    if choice.isdigit() and 1 <= int(choice) <= len(scripts):
+        s = scripts[int(choice) - 1]
+        console.print(f"⚡ Running {s.name} ({s.command})...\n")
+        execute_script(s.command, cwd=current_dir)
+
+
+def handle_fuzzy_find(current_dir: Path) -> None:
+    """Interactive fuzzy file finder."""
+    query = Prompt.ask("[bold cyan]Enter file name or fuzzy search pattern[/bold cyan]", default="")
+    if not query:
+        return
+    results = find_files_fuzzy(query, root_dir=current_dir, limit=15)
+    if not results:
+        console.print("[yellow]No files matched your search.[/yellow]")
+        return
+
+    table = Table(
+        title=f"Matches for '{query}'",
+        border_style=PALETTE["blue"],
+        header_style=f"bold {PALETTE['cyan']}",
+    )
+    table.add_column("#", style="dim", width=4)
+    table.add_column("Path", style=f"bold {PALETTE['green']}")
+    table.add_column("Score", style=f"{PALETTE['magenta']}", justify="right")
+
+    for idx, r in enumerate(results, 1):
+        table.add_row(str(idx), r.relative_path, f"{int(r.score)}%")
+    console.print(table)
+
+    choice = Prompt.ask("Select file # to open in editor (or Enter to exit)", default="")
+    if choice.isdigit() and 1 <= int(choice) <= len(results):
+        open_file_in_editor(results[int(choice) - 1].path)
+
+
+def handle_notes_menu(current_dir: Path) -> None:
+    """Interactive notes manager."""
+    notes = list_notes(str(current_dir.resolve()))
+    table = Table(
+        title="Project Tasks & Scratchpad",
+        border_style=PALETTE["blue"],
+        header_style=f"bold {PALETTE['cyan']}",
+    )
+    table.add_column("ID", style="dim", width=4)
+    table.add_column("Status", width=10, justify="center")
+    table.add_column("Task Content", style="bold")
+
+    for n in notes:
+        st = "[green]✔ DONE[/green]" if n.status == "done" else "[yellow]⏳ TODO[/yellow]"
+        cnt = f"[dim strike]{n.content}[/dim strike]" if n.status == "done" else n.content
+        table.add_row(str(n.id), st, cnt)
+    console.print(table)
+
+    console.print(
+        "\n[bold cyan]Options:[/bold cyan] [green][A][/green]dd Task | [green][T][/green]oggle Done | [green][D][/green]elete | [dim][Enter][/dim] Back"
+    )
+    opt = Prompt.ask("Action", default="").strip().upper()
+    if opt == "A":
+        text = Prompt.ask("Task content")
+        if text:
+            nid = add_note(text, str(current_dir.resolve()))
+            console.print(f"[green]✔ Added task #{nid}[/green]")
+    elif opt == "T":
+        tid = Prompt.ask("Task ID to toggle")
+        if tid.isdigit():
+            _, nst = toggle_note_status(int(tid))
+            console.print(f"[green]✔ Task status changed to {nst}[/green]")
+    elif opt == "D":
+        did = Prompt.ask("Task ID to delete")
+        if did.isdigit():
+            delete_note(int(did))
+            console.print("[green]✔ Task deleted[/green]")
+
+
 def run_interactive_dashboard(current_dir: Path) -> None:
     """Run interactive Command Center loop with action selection."""
     while True:
@@ -422,23 +554,25 @@ def run_interactive_dashboard(current_dir: Path) -> None:
 
         menu_text = Text()
         menu_text.append("  [1] ", style="bold green")
-        menu_text.append("📁 Explore Files (List / Tree / Search / TUI)\n", style="white")
+        menu_text.append("🚀 Ports Inspector & Zombie Killer (cassandra ports)\n", style="white")
         menu_text.append("  [2] ", style="bold green")
-        menu_text.append("⚒️  Create Project (DevForge Templates)\n", style="white")
+        menu_text.append("⚡ Universal Script Runner (cassandra run)\n", style="white")
         menu_text.append("  [3] ", style="bold green")
-        menu_text.append("🛠️  Advanced Tools (Duplicates / Disk Cleaner / Health)\n", style="white")
+        menu_text.append("🔍 Live Fuzzy File Finder + Editor (cassandra find)\n", style="white")
         menu_text.append("  [4] ", style="bold green")
-        menu_text.append("📦 Organize Directory (Tidy messy files)\n", style="white")
+        menu_text.append("📝 Project Notes & Tasks (cassandra notes)\n", style="white")
         menu_text.append("  [5] ", style="bold green")
-        menu_text.append("🌐 Workspace Explorer (Register & View)\n", style="white")
+        menu_text.append("📁 Explore Files (List / Tree / Search / TUI)\n", style="white")
         menu_text.append("  [6] ", style="bold green")
-        menu_text.append("⏱️  Recent Projects\n", style="white")
+        menu_text.append("⚒️  Create Project (DevForge Templates)\n", style="white")
         menu_text.append("  [7] ", style="bold green")
-        menu_text.append("📜 Activity History\n", style="white")
+        menu_text.append("🛠️  Advanced Tools (Duplicates / Disk / Health)\n", style="white")
         menu_text.append("  [8] ", style="bold green")
-        menu_text.append("⚙️  Settings & Preferences\n", style="white")
+        menu_text.append("📦 Organize Directory (Tidy messy files)\n", style="white")
         menu_text.append("  [9] ", style="bold green")
-        menu_text.append("🔄 Refresh Dashboard\n", style="white")
+        menu_text.append("🌐 Workspace & Projects (Register & View)\n", style="white")
+        menu_text.append("  [10] ", style="bold green")
+        menu_text.append("📜 Activity History & Settings\n", style="white")
         menu_text.append("  [0] ", style="bold dim")
         menu_text.append("🚪 Exit\n", style="bold red")
 
@@ -452,39 +586,30 @@ def run_interactive_dashboard(current_dir: Path) -> None:
 
         choice = Prompt.ask(
             "[bold cyan]Select an option[/bold cyan]",
-            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+            choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "0"],
             default="1",
         )
 
         if choice == "1":
-            handle_explore_files(current_dir)
+            handle_ports_menu()
         elif choice == "2":
-            handle_create_project(current_dir)
+            handle_runner_menu(current_dir)
         elif choice == "3":
-            handle_tools_menu(current_dir)
+            handle_fuzzy_find(current_dir)
         elif choice == "4":
-            handle_organize_files(current_dir)
+            handle_notes_menu(current_dir)
         elif choice == "5":
-            handle_workspace_menu(current_dir)
+            handle_explore_files(current_dir)
         elif choice == "6":
-            recents = get_recent_projects()
-            table = create_table(
-                title="⏱️ Recent Projects", columns=["Name", "Type", "Path", "Last Accessed"]
-            )
-            for r in recents:
-                table.add_row(
-                    f"[bold cyan]{r.name}[/bold cyan]",
-                    f"[bold green]{r.project_type}[/bold green]",
-                    r.path,
-                    r.last_accessed,
-                )
-            console.print(table)
+            handle_create_project(current_dir)
         elif choice == "7":
-            handle_activity_history()
+            handle_tools_menu(current_dir)
         elif choice == "8":
-            handle_settings_menu()
+            handle_organize_files(current_dir)
         elif choice == "9":
-            continue
+            handle_workspace_menu(current_dir)
+        elif choice == "10":
+            handle_activity_history()
         elif choice == "0":
             console.print(
                 "\n[bold magenta]Thank you for using CassandraID-Terminal! Goodbye 👋[/bold magenta]\n"
