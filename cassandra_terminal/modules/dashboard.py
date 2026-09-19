@@ -309,13 +309,13 @@ def handle_tools_menu(current_dir: Path) -> None:
         console.print(
             f"\n[bold cyan]Project Health Score:[/bold cyan] [bold green]{health.score}/100[/bold green]"
         )
-        for check, passed in health.checks.items():
-            badge = "[bold green]PASS[/bold green]" if passed else "[bold red]FAIL[/bold red]"
-            console.print(f"  • {check}: {badge}")
-        if health.recommendations:
-            console.print("\n[bold yellow]Recommendations:[/bold yellow]")
-            for rec in health.recommendations:
-                console.print(f"  ⚡ {rec}")
+        for check in health.checks:
+            badge = "[bold green]PASS[/bold green]" if check.passed else "[bold red]FAIL[/bold red]"
+            console.print(f"  • {check.name}: {badge} [dim]({check.description})[/dim]")
+        if health.suggestions:
+            console.print("\n[bold yellow]Suggestions:[/bold yellow]")
+            for sug in health.suggestions:
+                console.print(f"  ⚡ {sug}")
 
 
 def handle_organize_files(current_dir: Path) -> None:
