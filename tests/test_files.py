@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fileforge.modules.files import (
+from cassandra_terminal.modules.files import (
     execute_organize,
     list_directory,
     plan_organize,

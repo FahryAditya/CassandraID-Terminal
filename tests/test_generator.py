@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fileforge.modules.generator import (
+from cassandra_terminal.modules.generator import (
     generate_project,
     get_available_templates,
     preview_template_structure,

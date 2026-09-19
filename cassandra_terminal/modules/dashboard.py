@@ -8,32 +8,32 @@ from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
-from fileforge.modules.activity import clear_activity_logs, get_activity_logs
-from fileforge.modules.files import (
+from cassandra_terminal.modules.activity import clear_activity_logs, get_activity_logs
+from cassandra_terminal.modules.files import (
     execute_organize,
     list_directory,
     plan_organize,
     search_files,
 )
-from fileforge.modules.generator import (
+from cassandra_terminal.modules.generator import (
     generate_project,
     get_available_templates,
 )
-from fileforge.modules.git_intel import check_project_health, get_git_status
-from fileforge.modules.settings import get_all_settings, set_setting
-from fileforge.modules.tools import (
+from cassandra_terminal.modules.git_intel import check_project_health, get_git_status
+from cassandra_terminal.modules.settings import get_all_settings, set_setting
+from cassandra_terminal.modules.tools import (
     analyze_disk_usage,
     clean_junk_directories,
     find_duplicate_files,
 )
-from fileforge.modules.tui import run_tui_file_browser
-from fileforge.modules.workspace import (
+from cassandra_terminal.modules.tui import run_tui_file_browser
+from cassandra_terminal.modules.workspace import (
     add_workspace,
     detect_project_type,
     get_recent_projects,
     list_workspaces,
 )
-from fileforge.ui.theme import console, create_table
+from cassandra_terminal.ui.theme import console, create_table
 
 
 def render_dashboard(current_dir: Path) -> None:
@@ -141,13 +141,13 @@ def render_dashboard(current_dir: Path) -> None:
 
     cmd_help = Text()
     cmd_help.append("⚡ Quick Commands:\n", style="bold cyan")
-    cmd_help.append(" • fileforge files browse .        ", style="green")
+    cmd_help.append(" • cassandra_terminal files browse .        ", style="green")
     cmd_help.append("Interactive TUI Browser\n", style="dim")
-    cmd_help.append(" • fileforge tools duplicates .    ", style="green")
+    cmd_help.append(" • cassandra_terminal tools duplicates .    ", style="green")
     cmd_help.append("Scan duplicate files\n", style="dim")
-    cmd_help.append(" • fileforge tools disk . --clean  ", style="green")
+    cmd_help.append(" • cassandra_terminal tools disk . --clean  ", style="green")
     cmd_help.append("Clean build/cache junk\n", style="dim")
-    cmd_help.append(" • fileforge tools health .        ", style="green")
+    cmd_help.append(" • cassandra_terminal tools health .        ", style="green")
     cmd_help.append("Check project health\n", style="dim")
 
     right_group = Group(act_table, Panel(cmd_help, border_style="dim cyan"))

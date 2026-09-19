@@ -1,9 +1,9 @@
 import typer
 from rich.prompt import Confirm
 
-from fileforge.modules.activity import clear_activity_logs, get_activity_logs
-from fileforge.modules.settings import get_all_settings, get_setting, set_setting
-from fileforge.ui.theme import console, create_table, error_console
+from cassandra_terminal.modules.activity import clear_activity_logs, get_activity_logs
+from cassandra_terminal.modules.settings import get_all_settings, get_setting, set_setting
+from cassandra_terminal.ui.theme import console, create_table, error_console
 
 settings_app = typer.Typer(help="User preferences and configuration (Settings)")
 

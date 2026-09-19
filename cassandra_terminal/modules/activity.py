@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from fileforge.db.connection import get_db
+from cassandra_terminal.db.connection import get_db
 
 
 class ActivityLog(BaseModel):

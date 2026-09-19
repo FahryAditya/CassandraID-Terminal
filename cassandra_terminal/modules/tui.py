@@ -10,8 +10,8 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from fileforge.modules.files import FileItem, list_directory
-from fileforge.ui.theme import console
+from cassandra_terminal.modules.files import FileItem, list_directory
+from cassandra_terminal.ui.theme import console
 
 
 def get_key() -> str:

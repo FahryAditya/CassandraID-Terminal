@@ -4,12 +4,12 @@ import typer
 from rich.panel import Panel
 from rich.text import Text
 
-from fileforge.modules.generator import (
+from cassandra_terminal.modules.generator import (
     generate_project,
     get_available_templates,
     preview_template_structure,
 )
-from fileforge.ui.theme import console, create_table, error_console
+from cassandra_terminal.ui.theme import console, create_table, error_console
 
 templates_app = typer.Typer(help="Template inspection commands")
 
@@ -31,7 +31,7 @@ def list_templates_cmd():
         )
     console.print(table)
     console.print(
-        "\n[dim]To generate a project, use:[/dim] [green]fileforge create <template_key> <project_name>[/green]"
+        "\n[dim]To generate a project, use:[/dim] [green]cassandra_terminal create <template_key> <project_name>[/green]"
     )
 
 

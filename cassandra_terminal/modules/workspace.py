@@ -3,8 +3,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from fileforge.db.connection import get_db
-from fileforge.modules.activity import log_activity
+from cassandra_terminal.db.connection import get_db
+from cassandra_terminal.modules.activity import log_activity
 
 
 class Workspace(BaseModel):

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from fileforge.modules.activity import log_activity
+from cassandra_terminal.modules.activity import log_activity
 
 
 @dataclass

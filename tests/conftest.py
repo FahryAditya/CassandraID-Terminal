@@ -3,13 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from fileforge.db.connection import init_db
+from cassandra_terminal.db.connection import init_db
 
 
 @pytest.fixture(autouse=True)
 def test_db(tmp_path: Path):
     """Fixture to ensure all tests use an isolated temporary SQLite database."""
-    db_file = tmp_path / "test_fileforge.db"
+    db_file = tmp_path / "test_cassandra_terminal.db"
     os.environ["FILEFORGE_DB_PATH"] = str(db_file)
     init_db(db_file)
     yield db_file

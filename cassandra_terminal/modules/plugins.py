@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from fileforge.config import get_app_dir
-from fileforge.modules.activity import log_activity
+from cassandra_terminal.config import get_app_dir
+from cassandra_terminal.modules.activity import log_activity
 
 
 @dataclass

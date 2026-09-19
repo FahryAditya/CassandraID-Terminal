@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from fileforge.modules.git_intel import check_project_health, get_git_status
-from fileforge.modules.tools import (
+from cassandra_terminal.modules.git_intel import check_project_health, get_git_status
+from cassandra_terminal.modules.tools import (
     analyze_disk_usage,
     clean_junk_directories,
     create_archive,

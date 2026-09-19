@@ -25,12 +25,12 @@ dev = [
 ]
 
 [project.scripts]
-cassandra = "fileforge.cli.main:app"
-cassandra-terminal = "fileforge.cli.main:app"
-fileforge = "fileforge.cli.main:app"
+cassandra = "cassandra_terminal.cli.main:app"
+cassandra-terminal = "cassandra_terminal.cli.main:app"
+cassandra_terminal = "cassandra_terminal.cli.main:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["fileforge"]
+packages = ["cassandra_terminal"]
 
 [tool.ruff]
 line-length = 100

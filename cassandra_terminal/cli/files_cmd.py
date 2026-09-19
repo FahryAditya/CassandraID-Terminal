@@ -4,7 +4,7 @@ import typer
 from rich.prompt import Confirm
 from rich.tree import Tree
 
-from fileforge.modules.files import (
+from cassandra_terminal.modules.files import (
     execute_organize,
     list_directory,
     plan_organize,
@@ -14,8 +14,8 @@ from fileforge.modules.files import (
     safe_rename,
     search_files,
 )
-from fileforge.modules.tui import run_tui_file_browser
-from fileforge.ui.theme import console, create_table, error_console
+from cassandra_terminal.modules.tui import run_tui_file_browser
+from cassandra_terminal.ui.theme import console, create_table, error_console
 
 files_app = typer.Typer(help="File & directory management commands (FileForge)")
 

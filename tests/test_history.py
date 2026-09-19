@@ -1,4 +1,4 @@
-from fileforge.modules.activity import clear_activity_logs, get_activity_logs, log_activity
+from cassandra_terminal.modules.activity import clear_activity_logs, get_activity_logs, log_activity
 
 
 def test_activity_logging():

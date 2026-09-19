@@ -2,14 +2,14 @@ from pathlib import Path
 
 import typer
 
-from fileforge.modules.workspace import (
+from cassandra_terminal.modules.workspace import (
     add_workspace,
     get_recent_projects,
     list_workspaces,
     remove_recent_project,
     remove_workspace,
 )
-from fileforge.ui.theme import console, create_table, error_console
+from cassandra_terminal.ui.theme import console, create_table, error_console
 
 workspace_app = typer.Typer(help="Workspace management commands (Workspace Explorer)")
 projects_app = typer.Typer(help="Recent projects tracking commands")
@@ -24,7 +24,7 @@ def list_ws_cmd():
     workspaces = list_workspaces()
     if not workspaces:
         console.print(
-            "[dim]No registered workspaces yet. Use 'fileforge workspace add <path>' to add one.[/dim]"
+            "[dim]No registered workspaces yet. Use 'cassandra_terminal workspace add <path>' to add one.[/dim]"
         )
         return
 

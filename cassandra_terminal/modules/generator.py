@@ -5,8 +5,8 @@ from typing import Any
 
 import jinja2
 
-from fileforge.modules.activity import log_activity
-from fileforge.modules.workspace import record_recent_project
+from cassandra_terminal.modules.activity import log_activity
+from cassandra_terminal.modules.workspace import record_recent_project
 
 
 @dataclass

@@ -1,13 +1,13 @@
 import json
 from pathlib import Path
 
-from fileforge.modules.plugins import dispatch_hook, list_plugins
+from cassandra_terminal.modules.plugins import dispatch_hook, list_plugins
 
 
 def test_plugin_discovery_and_hook(tmp_path: Path, monkeypatch):
     plugins_dir = tmp_path / "plugins"
     plugins_dir.mkdir()
-    monkeypatch.setattr("fileforge.modules.plugins.get_plugins_dir", lambda: plugins_dir)
+    monkeypatch.setattr("cassandra_terminal.modules.plugins.get_plugins_dir", lambda: plugins_dir)
 
     # Create dummy plugin
     p1 = plugins_dir / "my_plugin"

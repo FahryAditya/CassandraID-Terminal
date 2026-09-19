@@ -5,8 +5,8 @@ from rich.panel import Panel
 from rich.prompt import Confirm
 from rich.text import Text
 
-from fileforge.modules.git_intel import check_project_health, get_git_status
-from fileforge.modules.tools import (
+from cassandra_terminal.modules.git_intel import check_project_health, get_git_status
+from cassandra_terminal.modules.tools import (
     analyze_disk_usage,
     clean_junk_directories,
     create_archive,
@@ -15,7 +15,7 @@ from fileforge.modules.tools import (
     find_duplicate_files,
     plan_batch_rename,
 )
-from fileforge.ui.theme import console, create_table, error_console
+from cassandra_terminal.ui.theme import console, create_table, error_console
 
 tools_app = typer.Typer(help="Advanced file, storage, and repository tools")
 

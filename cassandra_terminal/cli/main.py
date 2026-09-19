@@ -13,14 +13,14 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from fileforge import __app_name__, __version__
-from fileforge.cli.files_cmd import files_app
-from fileforge.cli.misc_cmd import history_cmd, settings_app
-from fileforge.cli.project_cmd import create_cmd, templates_app
-from fileforge.cli.tools_cmd import tools_app
-from fileforge.cli.workspace_cmd import projects_app, workspace_app
-from fileforge.modules.dashboard import render_dashboard, run_interactive_dashboard
-from fileforge.ui.theme import console
+from cassandra_terminal import __app_name__, __version__
+from cassandra_terminal.cli.files_cmd import files_app
+from cassandra_terminal.cli.misc_cmd import history_cmd, settings_app
+from cassandra_terminal.cli.project_cmd import create_cmd, templates_app
+from cassandra_terminal.cli.tools_cmd import tools_app
+from cassandra_terminal.cli.workspace_cmd import projects_app, workspace_app
+from cassandra_terminal.modules.dashboard import render_dashboard, run_interactive_dashboard
+from cassandra_terminal.ui.theme import console
 
 app = typer.Typer(
     name=__app_name__,
@@ -80,7 +80,7 @@ def main(
 ):
     """FileForge DevKit CLI Entrypoint."""
     if ctx.invoked_subcommand is None:
-        # Default behavior when running just `fileforge`
+        # Default behavior when running just `cassandra_terminal`
         run_interactive_dashboard(Path("."))
 
 

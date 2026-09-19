@@ -1,6 +1,6 @@
 import pytest
 
-from fileforge.modules.settings import get_all_settings, get_setting, set_setting
+from cassandra_terminal.modules.settings import get_all_settings, get_setting, set_setting
 
 
 def test_settings_read_write():

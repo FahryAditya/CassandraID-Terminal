@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fileforge.db.connection import get_db
+from cassandra_terminal.db.connection import get_db
 
 DEFAULT_SETTINGS = {
     "theme": "deep-space",

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from fileforge.cli.main import app
+from cassandra_terminal.cli.main import app
 
 runner = CliRunner()
 

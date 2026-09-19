@@ -3,8 +3,8 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
-from fileforge.config import get_db_path
-from fileforge.db.schema import CREATE_TABLES_SQL
+from cassandra_terminal.config import get_db_path
+from cassandra_terminal.db.schema import CREATE_TABLES_SQL
 
 _INITIALIZED_DBS: set[str] = set()
 

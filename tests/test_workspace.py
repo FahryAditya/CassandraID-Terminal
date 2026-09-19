@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fileforge.modules.workspace import (
+from cassandra_terminal.modules.workspace import (
     add_workspace,
     detect_project_type,
     get_recent_projects,
