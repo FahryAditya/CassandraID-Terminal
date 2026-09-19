@@ -213,7 +213,11 @@ def handle_explore_files(current_dir: Path) -> None:
         )
         for it in matches:
             type_badge = "[bold magenta]<DIR>[/bold magenta]" if it.is_dir else "[cyan]FILE[/cyan]"
-            table.add_row(type_badge, it.name, it.relative_path, it.formatted_size)
+            try:
+                rel = str(it.path.relative_to(current_dir.resolve()))
+            except Exception:
+                rel = str(it.path)
+            table.add_row(type_badge, it.name, rel, it.formatted_size)
         console.print(table)
     elif choice == "4":
         run_tui_file_browser(current_dir)
@@ -226,7 +230,7 @@ def handle_create_project(current_dir: Path) -> None:
     for idx, t in enumerate(templates, 1):
         console.print(
             f"  [bold green]{idx}.[/bold green] [bold white]{t.name}[/bold white] "
-            f"([dim]{t.language}[/dim]) - {t.description}"
+            f"([dim]{t.key}[/dim]) - {t.description}"
         )
 
     choice = Prompt.ask(
@@ -236,8 +240,7 @@ def handle_create_project(current_dir: Path) -> None:
         return
 
     selected_tpl = templates[int(choice) - 1]
-    name = Prompt.ask("[bold cyan]Project name[/bold cyan]", default=f"my-{selected_tpl.id}-app")
-    target_dir = current_dir / name
+    name = Prompt.ask("[bold cyan]Project name[/bold cyan]", default=f"my-{selected_tpl.key}-app")
 
     init_git = Confirm.ask("[bold cyan]Initialize Git repository?[/bold cyan]", default=True)
     author = Prompt.ask("[bold cyan]Author name[/bold cyan]", default="Developer")
@@ -245,16 +248,19 @@ def handle_create_project(current_dir: Path) -> None:
         "[bold cyan]Project description[/bold cyan]", default="Created with CassandraID-Terminal"
     )
 
-    console.print(f"\n[cyan]Generating project at {target_dir}...[/cyan]")
-    generate_project(
-        template_id=selected_tpl.id,
-        target_path=target_dir,
-        project_name=name,
-        init_git=init_git,
-        author=author,
-        description=desc,
-    )
-    console.print(f"[bold green]✓ Project '{name}' created successfully![/bold green]")
+    console.print(f"\n[cyan]Generating project '{name}'...[/cyan]")
+    try:
+        dest = generate_project(
+            template_key=selected_tpl.key,
+            project_name=name,
+            target_dir=current_dir,
+            author_name=author,
+            description=desc,
+            git_init=init_git,
+        )
+        console.print(f"[bold green]✓ Project created successfully at {dest}![/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]Failed to create project:[/bold red] {e}")
 
 
 def handle_tools_menu(current_dir: Path) -> None:
