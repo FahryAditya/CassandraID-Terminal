@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import psutil
@@ -13,6 +15,8 @@ class PortProcess:
     pid: int | None
     process_name: str
     status: str
+    memory_mb: float = 0.0
+    exe_path: str = ""
 
 
 def get_active_listening_ports() -> list[PortProcess]:
@@ -39,10 +43,20 @@ def get_active_listening_ports() -> list[PortProcess]:
             seen_keys.add(key)
 
             proc_name = "Unknown"
+            mem_mb = 0.0
+            exe = ""
             if pid:
                 try:
                     p = psutil.Process(pid)
                     proc_name = p.name()
+                    try:
+                        mem_mb = round(p.memory_info().rss / (1024 * 1024), 1)
+                    except Exception:
+                        pass
+                    try:
+                        exe = p.exe()
+                    except Exception:
+                        pass
                 except Exception:
                     proc_name = "System / Terminated"
 
@@ -54,6 +68,8 @@ def get_active_listening_ports() -> list[PortProcess]:
                     pid=pid,
                     process_name=proc_name,
                     status=conn.status if conn.status else "LISTENING",
+                    memory_mb=mem_mb,
+                    exe_path=exe,
                 )
             )
 
