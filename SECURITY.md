@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-Security is a high priority for FileForge DevKit. If you discover a security vulnerability (such as a path-traversal risk, unauthorized file execution, or data exposure), please report it responsibly:
+Security is a high priority for CassandraID-Terminal. If you discover a security vulnerability (such as a path-traversal risk, unauthorized file execution, or data exposure), please report it responsibly:
 
 1. **Do not** open a public issue on GitHub.
 2. Please send an email to the project maintainers or open a private GitHub Security Advisory.

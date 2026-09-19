@@ -1,14 +1,14 @@
 <div align="center">
 
-# 🗂️ FileForge DevKit
+# ⚡ CassandraID-Terminal
 
-**A local-first developer workspace toolkit and intelligence center for the terminal.**
+**A local-first developer workspace toolkit and terminal intelligence center.**
 
 File management • Project scaffolding • Dual-pane TUI • Git intelligence • Activity tracking. All in one CLI.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-5B58EB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Typer](https://img.shields.io/badge/CLI-Typer-BB63FF?style=for-the-badge)](https://typer.tiangolo.com/)
-[![Rich](https://img.shields.io/badge/UI-Rich-56E1E9?style=for-the-badge)](https://github.com/Textualize/rich)
+[![CLI](https://img.shields.io/badge/CLI-Typer-BB63FF?style=for-the-badge)](https://typer.tiangolo.com/)
+[![UI](https://img.shields.io/badge/UI-Rich-56E1E9?style=for-the-badge)](https://github.com/Textualize/rich)
 [![License: MIT](https://img.shields.io/badge/License-MIT-112C70?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-0A2353?style=for-the-badge)](https://github.com)
 [![CI](https://img.shields.io/badge/Tests-33%20Passing-brightgreen?style=for-the-badge)](tests/)
@@ -19,7 +19,7 @@ File management • Project scaffolding • Dual-pane TUI • Git intelligence �
 
 ## 🎨 Brand Identity — "Deep Space"
 
-FileForge DevKit's visual identity is built on the **Deep Space** color palette: a focused, modern, developer-friendly range of navy, indigo, purple, and cyan.
+CassandraID-Terminal's visual identity is built on the **Deep Space** color palette: a focused, modern, developer-friendly range of navy, indigo, purple, and cyan.
 
 | Swatch | Name | Hex Code | Semantic Terminal Mapping | Usage |
 |---|---|---|---|---|
@@ -42,7 +42,7 @@ FileForge DevKit's visual identity is built on the **Deep Space** color palette:
 - **Full Keyboard Navigation**: Arrow keys (`↑`, `↓`, `Enter`, `Backspace`, or `h`/`j`/`k`/`l`).
 - **Live In-Terminal File Preview**: Syntax-highlighted code preview (Python, JS, TS, HTML, CSS, Rust, Go, SQL) and formatted Markdown rendering.
 
-### ⚒️ 3. DevForge Project Generator (10 Ready-to-Use Templates)
+### ⚒️ 3. Project Generator (10 Ready-to-Use Scaffolding Templates)
 - Instant project scaffolding with Jinja2 templating:
   - `python-cli` — Typer + Rich CLI starter
   - `python-pkg` — Python package with pytest & ruff setup
@@ -70,7 +70,7 @@ FileForge DevKit's visual identity is built on the **Deep Space** color palette:
 - Safe settings manager preventing accidental disabling of destructive confirmations.
 
 ### 🔌 6. Plugin & Extension System
-- Manifest-based plugin architecture (`~/.fileforge/plugins/`) with lifecycle hook dispatchers.
+- Manifest-based plugin architecture (`~/.cassandra/plugins/`) with lifecycle hook dispatchers.
 
 ---
 
@@ -81,8 +81,8 @@ FileForge DevKit's visual identity is built on the **Deep Space** color palette:
 Clone the repository and install in editable mode:
 
 ```bash
-git clone https://github.com/your-username/fileforge-devkit.git
-cd fileforge-devkit
+git clone https://github.com/your-username/CassandraID-Terminal.git
+cd CassandraID-Terminal
 python -m venv .venv
 
 # On Windows (PowerShell):
@@ -101,37 +101,37 @@ pip install -e .
 Launch the **Interactive Command Center**:
 
 ```bash
-fileforge
+cassandra
 # or explicitly
-fileforge dashboard
+cassandra dashboard
 ```
 
 ### Command Reference
 
 | Command | Description |
 |---|---|
-| `fileforge` | Launch the interactive Command Center dashboard |
-| `fileforge files browse [PATH]` | Open interactive dual-pane TUI File Explorer |
-| `fileforge files list [PATH]` | List directory contents with metadata & sizes |
-| `fileforge files tree [PATH]` | Display visual directory hierarchy |
-| `fileforge files search QUERY` | Search files by name, regex, or extension |
-| `fileforge files organize [PATH]` | Auto-categorize messy files (dry-run supported) |
-| `fileforge files copy SRC DST` | Safely copy file/directory (with collision protection) |
-| `fileforge files move SRC DST` | Safely move file/directory |
-| `fileforge files delete PATH` | Safeguarded deletion with confirmation prompts |
-| `fileforge create TEMPLATE NAME` | Generate a new project from a DevForge template |
-| `fileforge templates list` | List all available scaffolding templates |
-| `fileforge tools duplicates [PATH]` | Find duplicate files based on content hash |
-| `fileforge tools disk [PATH]` | Analyze directory storage usage (`--clean` to tidy junk) |
-| `fileforge tools rename [PATH]` | Batch rename files with regex patterns & numbering |
-| `fileforge tools zip SOURCE` | Compress file or folder into zip/tar archive |
-| `fileforge tools unzip ARCHIVE` | Extract archive safely |
-| `fileforge tools health [PATH]` | Evaluate project health score & suggestions |
-| `fileforge workspace list` | View registered workspaces |
-| `fileforge workspace add [PATH]` | Register a new workspace |
-| `fileforge projects recent` | View recently accessed projects |
-| `fileforge history` | View activity audit trail in SQLite |
-| `fileforge settings` | View or adjust configuration preferences |
+| `cassandra` | Launch the interactive Command Center dashboard |
+| `cassandra files browse [PATH]` | Open interactive dual-pane TUI File Explorer |
+| `cassandra files list [PATH]` | List directory contents with metadata & sizes |
+| `cassandra files tree [PATH]` | Display visual directory hierarchy |
+| `cassandra files search QUERY` | Search files by name, regex, or extension |
+| `cassandra files organize [PATH]` | Auto-categorize messy files (dry-run supported) |
+| `cassandra files copy SRC DST` | Safely copy file/directory (with collision protection) |
+| `cassandra files move SRC DST` | Safely move file/directory |
+| `cassandra files delete PATH` | Safeguarded deletion with confirmation prompts |
+| `cassandra create TEMPLATE NAME` | Generate a new project from a scaffold template |
+| `cassandra templates list` | List all available scaffolding templates |
+| `cassandra tools duplicates [PATH]` | Find duplicate files based on content hash |
+| `cassandra tools disk [PATH]` | Analyze directory storage usage (`--clean` to tidy junk) |
+| `cassandra tools rename [PATH]` | Batch rename files with regex patterns & numbering |
+| `cassandra tools zip SOURCE` | Compress file or folder into zip/tar archive |
+| `cassandra tools unzip ARCHIVE` | Extract archive safely |
+| `cassandra tools health [PATH]` | Evaluate project health score & suggestions |
+| `cassandra workspace list` | View registered workspaces |
+| `cassandra workspace add [PATH]` | Register a new workspace |
+| `cassandra projects recent` | View recently accessed projects |
+| `cassandra history` | View activity audit trail in SQLite |
+| `cassandra settings` | View or adjust configuration preferences |
 
 ---
 
@@ -154,7 +154,7 @@ ruff format --check .
 
 ## 🔒 Security & Privacy
 
-- **Local-First & Offline**: All metadata is stored locally in SQLite (`%APPDATA%\FileForge\fileforge.db` or `~/.local/share/fileforge/fileforge.db`).
+- **Local-First & Offline**: All metadata is stored locally in SQLite.
 - **No Telemetry**: No tracking, no external network requests.
 - **Path-Traversal Protected**: Template engines and archive extractors strictly prevent directory traversal attacks.
 - **Destructive Safeguards**: File deletion, overwrite, and batch modifications always require user confirmation.
@@ -173,6 +173,6 @@ Distributed under the **MIT License**. See [LICENSE](LICENSE) for more informati
 
 <div align="center">
 
-**FileForge DevKit** • Crafted with 🩵 using the Deep Space theme
+**CassandraID-Terminal** • Crafted with 🩵 using the Deep Space theme
 
 </div>

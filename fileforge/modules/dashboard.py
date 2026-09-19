@@ -45,7 +45,7 @@ def render_dashboard(current_dir: Path) -> None:
 
     # 1. Header Banner
     header_text = Text()
-    header_text.append("🗂️  FileForge DevKit", style="bold cyan")
+    header_text.append("⚡ CassandraID-Terminal", style="bold cyan")
     header_text.append("  •  Command Center\n", style="bold magenta")
     header_text.append("Local-First Developer Workspace Toolkit\n\n", style="dim")
     header_text.append("📁 Directory: ", style="bold white")
@@ -487,7 +487,7 @@ def run_interactive_dashboard(current_dir: Path) -> None:
             continue
         elif choice == "0":
             console.print(
-                "\n[bold magenta]Thank you for using FileForge DevKit! Goodbye 👋[/bold magenta]\n"
+                "\n[bold magenta]Thank you for using CassandraID-Terminal! Goodbye 👋[/bold magenta]\n"
             )
             break
 

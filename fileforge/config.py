@@ -3,13 +3,13 @@ from pathlib import Path
 
 import platformdirs
 
-APP_NAME = "FileForge"
-APP_AUTHOR = "FileForge"
+APP_NAME = "CassandraID-Terminal"
+APP_AUTHOR = "CassandraID"
 
 
 def get_app_dir() -> Path:
     """Return the application data directory based on OS."""
-    override = os.environ.get("FILEFORGE_DATA_DIR")
+    override = os.environ.get("FILEFORGE_DATA_DIR") or os.environ.get("CASSANDRA_DATA_DIR")
     if override:
         path = Path(override)
     else:
@@ -20,7 +20,7 @@ def get_app_dir() -> Path:
 
 def get_db_path() -> Path:
     """Return the SQLite database path."""
-    override = os.environ.get("FILEFORGE_DB_PATH")
+    override = os.environ.get("FILEFORGE_DB_PATH") or os.environ.get("CASSANDRA_DB_PATH")
     if override:
         return Path(override)
-    return get_app_dir() / "fileforge.db"
+    return get_app_dir() / "cassandra.db"

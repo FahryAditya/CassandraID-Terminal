@@ -1,6 +1,6 @@
-# Contributing to FileForge DevKit
+# Contributing to CassandraID-Terminal
 
-Thank you for your interest in contributing to **FileForge DevKit**! We welcome contributions of all kinds: bug fixes, new project templates, performance improvements, and documentation enhancements.
+Thank you for your interest in contributing to **CassandraID-Terminal**! We welcome contributions of all kinds: bug fixes, new project templates, performance improvements, and documentation enhancements.
 
 ---
 

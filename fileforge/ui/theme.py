@@ -31,7 +31,7 @@ error_console = Console(theme=DEEP_SPACE_THEME, stderr=True, safe_box=True)
 
 
 def print_banner(
-    title: str = "FileForge DevKit", subtitle: str = "Developer Workspace Toolkit"
+    title: str = "CassandraID-Terminal", subtitle: str = "Developer Workspace Toolkit"
 ) -> None:
     """Print the stylized application banner."""
     text = Text()

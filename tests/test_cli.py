@@ -10,7 +10,7 @@ runner = CliRunner()
 def test_cli_version():
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "fileforge version" in result.output.lower()
+    assert "cassandra" in result.output.lower() and "version" in result.output.lower()
 
 
 def test_cli_templates_list():

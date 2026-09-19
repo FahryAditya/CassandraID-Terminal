@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve FileForge DevKit
+about: Create a report to help us improve CassandraID-Terminal
 title: '[BUG] '
 labels: bug
 assignees: ''
@@ -22,7 +22,7 @@ A clear and concise description of what you expected to happen.
 - OS: [e.g. Windows 11, Ubuntu 22.04, macOS Sonoma]
 - Terminal: [e.g. Windows Terminal, PowerShell, CMD, iTerm2]
 - Python Version: [e.g. 3.11.4]
-- FileForge Version: [e.g. 0.1.0]
+- App Version: [e.g. 0.1.0]
 
 **Additional context**
 Add any other context or screenshots about the problem here.

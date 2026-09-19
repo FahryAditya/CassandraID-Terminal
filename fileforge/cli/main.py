@@ -24,7 +24,7 @@ from fileforge.ui.theme import console
 
 app = typer.Typer(
     name=__app_name__,
-    help="🗂️ FileForge DevKit - A local-first developer workspace toolkit for the terminal.",
+    help="⚡ CassandraID-Terminal - A local-first developer workspace toolkit and intelligence center for the terminal.",
     no_args_is_help=False,
     invoke_without_command=True,
 )

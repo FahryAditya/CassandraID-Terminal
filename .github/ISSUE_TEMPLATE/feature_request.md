@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea or new template for FileForge DevKit
+about: Suggest an idea or new template for CassandraID-Terminal
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
